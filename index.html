@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SportsSpherePro — Unified Live + Premium</title>
+<meta name="description" content="Live scores, sportsbook odds, AI precision, and a premium Analyst Hub." />
+<style>
+  :root{--bg:#06080f;--bg2:#0b1222;--neon:#38bdf8;--accent:#22d3ee;--muted:#94a3b8}
+  *{box-sizing:border-box} body{margin:0;font-family:ui-sans-serif,system-ui,Segoe UI,Inter,Arial;background:linear-gradient(180deg,var(--bg),var(--bg2));color:#e5e7eb}
+  .wrap{max-width:1200px;margin:0 auto;padding:16px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid rgba(148,163,184,.15)}
+  .title{font-weight:800;letter-spacing:.2px}.title b{color:var(--neon)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  input{background:#0b1220;border:1px solid rgba(148,163,184,.25);color:#e5e7eb;padding:8px 10px;border-radius:10px;outline:none}
+  .btn{border:1px solid rgba(56,189,248,.5);background:linear-gradient(180deg,rgba(56,189,248,.18),rgba(2,6,23,.25));color:#e6fbff;padding:8px 12px;border-radius:10px;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin:14px 0}
+  .card{grid-column:span 12;border:1px solid rgba(148,163,184,.18);background:linear-gradient(180deg,rgba(15,23,42,.65),rgba(2,6,23,.55));border-radius:14px;padding:12px}
+  @media(min-width:900px){ .span-8{grid-column:span 8}.span-4{grid-column:span 4}.span-6{grid-column:span 6} }
+  .muted{color:var(--muted)} .tag{padding:4px 8px;border-radius:999px;border:1px solid rgba(148,163,184,.3);font-size:.78rem}
+  table{width:100%;border-collapse:collapse;margin-top:8px} th,td{padding:8px;border-bottom:1px dashed rgba(148,163,184,.16);text-align:left}
+  thead th{color:#a5b4fc;border-bottom:1px solid rgba(99,102,241,.25)}
+  #liveDot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22d3ee;box-shadow:0 0 12px rgba(34,211,238,.8);margin-right:6px}
+  #memberCounter{margin-top:6px;font-size:.95rem;color:#a5f3fc;text-shadow:0 0 6px rgba(56,189,248,.6);animation:pulseGlow 3s ease-in-out infinite}
+  @keyframes pulseGlow{0%,100%{opacity:.8;text-shadow:0 0 6px rgba(56,189,248,.6)}50%{opacity:1;text-shadow:0 0 12px rgba(56,189,248,.9)}}
+  /* Chat styles */
+  .chat-row{margin:8px 0;padding:8px;border-bottom:1px dashed rgba(148,163,184,.12)}
+  .chat-name{color:#a5f3fc;font-weight:700;margin-right:6px;cursor:pointer}
+  .chat-time{color:#94a3b8;font-size:.82rem;margin-left:6px}
+  .chat-text{color:#e5e7eb;margin-top:4px;white-space:pre-wrap}
+  .mention{color:#22d3ee;text-shadow:0 0 6px rgba(34,211,238,.6)}
+  .badge-prem{margin-left:6px;padding:2px 6px;border:1px solid rgba(34,197,94,.35);border-radius:999px;color:#86efac;font-size:.72rem}
+  .reply-box{margin:8px 0 0 12px;padding-left:8px;border-left:2px solid rgba(96,165,250,.35)}
+  .reply-btn{font-size:.82rem;color:#93c5fd;cursor:pointer;margin-left:8px}
+  .mini-card{position:absolute;background:#0b1220;border:1px solid rgba(148,163,184,.28);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);display:none;z-index:50}
+  .follow-btn{border:1px solid rgba(250,204,21,.4);color:#fde68a;background:rgba(250,204,21,.08);border-radius:999px;padding:4px 8px;margin-top:6px;cursor:pointer}
+  .adminTag{padding:3px 6px;border-radius:8px;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);font-size:.72rem;color:#a5f3fc}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">Sports<span style="opacity:.85">Sphere</span><b>Pro</b></div>
+    <div class="row">
+      <input id="uName" placeholder="Username" autocomplete="username">
+      <input id="uPass" type="password" placeholder="Password" autocomplete="current-password">
+      <button class="btn" id="doSignIn">Sign in</button>
+      <button class="btn" id="doSignUp">Join Free</button>
+      <button class="btn" id="doSignOut" style="display:none">Log out</button>
+      <span id="welcome" class="muted" style="display:none">Hello <b id="who"></b> • <span class="tag" id="tier">Free</span></span>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2 style="margin:0"><span id="liveDot"></span>Live Scores, Sportsbook Odds, and AI Precision</h2>
+    <p class="muted">Compare moneyline, spreads, totals — unlock Premium for live odds and AI Win %.</p>
+    <div class="row">
+      <button class="btn" id="refresh">Refresh</button>
+      <button class="btn" id="unlock">Unlock Premium</button>
+      <span id="memberCounter" class="muted">👥 Loading members...</span>
+      <a href="/admin.html" class="adminTag" id="adminLink" style="display:none">Admin Dashboard</a>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card span-8">
+      <h3>Games — <span id="leagueLabel">NBA</span> <span class="muted" id="viewLabel">(Live/Recent)</span></h3>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn" data-league="NBA">NBA</button>
+        <button class="btn" data-league="NFL">NFL</button>
+        <button class="btn" data-league="EPL">EPL</button>
+        <button class="btn" data-league="La Liga">LaLiga</button>
+        <button class="btn" data-league="MLB">MLB</button>
+        <button class="btn" id="toggleView">Switch to Upcoming</button>
+      </div>
+      <table>
+        <thead><tr><th>Date</th><th>Match</th><th>Score</th><th>Moneyline</th><th>Spread</th><th>Totals</th><th>AI Win %</th></tr></thead>
+        <tbody id="scoresBody"><tr><td colspan="7" class="muted">Pick a league or press Refresh.</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card span-4">
+      <h3>🔥 AI Smart Picks (Members)</h3>
+      <ul id="smartPicks" class="muted"><li class="muted">Sign in to view today’s edge picks.</li></ul>
+      <hr style="border-color:rgba(148,163,184,.18)">
+      <h3>Promotions</h3>
+      <div id="promoBox" class="muted">Loading promo…</div>
+    </div>
+
+    <div class="card span-6">
+      <h3>🟢 The Arena (Public)</h3>
+      <div id="arenaFeed" style="height:220px;overflow:auto;border:1px solid rgba(148,163,184,.18);border-radius:10px;padding:10px;background:rgba(11,18,34,.35)"></div>
+      <div class="row" style="margin-top:8px">
+        <input id="arenaMsg" placeholder="Say something…"><button class="btn" id="arenaSend">Send</button>
+      </div>
+    </div>
+
+    <div class="card span-6">
+      <h3>💎 Analyst Hub (Premium)</h3>
+      <div id="analystFeed" style="height:220px;overflow:auto;border:1px solid rgba(148,163,184,.18);border-radius:10px;padding:10px;background:rgba(11,18,34,.35)"></div>
+      <div class="row" style="margin-top:8px">
+        <input id="analystMsg" placeholder="Drop an insight…"><button class="btn" id="analystSend">Send</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// ===== Auth (local demo) =====
+function currentUser(){ return localStorage.getItem('ssp_user') }
+function getUser(u){ try{ return JSON.parse(localStorage.getItem('ssp_user_'+u)) }catch(_){return null}}
+function saveUser(u, rec){ localStorage.setItem('ssp_user_'+u, JSON.stringify(rec)) }
+function isPremium(){ const u=currentUser(); if(!u) return false; const r=getUser(u)||{}; return r.tier==='Premium'; }
+function isAdmin(){ const u=currentUser(); return u==='admin'; }
+function paintAuth(){
+  const u = currentUser();
+  if(u){
+    doSignIn.style.display='none'; doSignUp.style.display='none'; doSignOut.style.display=''; welcome.style.display=''; who.textContent=u;
+    const rec=getUser(u)||{tier:'Free'}; tier.textContent=rec.tier; tier.className='tag '+(rec.tier==='Premium'?'ok':'warn');
+    document.getElementById('adminLink').style.display = isAdmin() ? '' : 'none';
+  }else{ doSignIn.style.display=''; doSignUp.style.display=''; doSignOut.style.display='none'; welcome.style.display='none'; document.getElementById('adminLink').style.display='none'; }
+}
+const doSignIn=document.getElementById('doSignIn'), doSignUp=document.getElementById('doSignUp'), doSignOut=document.getElementById('doSignOut');
+const who=document.getElementById('who'), welcome=document.getElementById('welcome'), tier=document.getElementById('tier');
+doSignIn.onclick=()=>{ const u=document.getElementById('uName').value.trim(), p=document.getElementById('uPass').value.trim(); const rec=getUser(u); if(rec&&rec.password===p){localStorage.setItem('ssp_user',u); paintAuth();} else alert('Invalid credentials')};
+doSignUp.onclick=()=>{ const u=document.getElementById('uName').value.trim(), p=document.getElementById('uPass').value.trim(); if(!u||!p) return alert('Enter username & password'); if(getUser(u)) return alert('User exists'); saveUser(u,{password:p,tier:'Free',created:Date.now()}); localStorage.setItem('ssp_user',u); paintAuth(); };
+doSignOut.onclick=()=>{ localStorage.removeItem('ssp_user'); paintAuth(); };
+
+document.getElementById('unlock').onclick = async ()=>{
+  const cfg = await (await fetch('/.netlify/functions/config')).json();
+  const r = await fetch('/.netlify/functions/createCheckout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ couponId: cfg.couponId })});
+  const j = await r.json(); if(j.url) location.href=j.url; else alert('Checkout unavailable');
+};
+
+// ===== Member counter & promo =====
+async function updateMemberCounter(){
+  try{ const r=await fetch('/.netlify/functions/analytics'); const j=await r.json(); document.getElementById('memberCounter').innerHTML = (j.total||0)>0 ? `👥 <b>${j.total}</b> members contributing real predictions today` : '🌱 Be the first to shape today’s predictions!'; }catch{}
+}
+async function paintPromo(){
+  try{ const r=await fetch('/.netlify/functions/config'); const j=await r.json(); document.getElementById('promoBox').innerHTML = `Tier: <b>${j.nextTier}</b> • Discount: <b>${j.discount}%</b> • Duration: <b>${j.durationDays}d</b>`; }catch{}
+}
+
+// ===== Live Games integration =====
+let activeLeague='NBA', activeView='live';
+function americanToProb(odds){ odds = Number(odds); if(!isFinite(odds)||odds===0) return null; return odds>0 ? 100/(odds+100) : (-odds)/(-odds+100); }
+function setLeague(l){ activeLeague=l; document.getElementById('leagueLabel').textContent=l; loadGames(); localStorage.setItem('ssp_last_league',l); }
+function toggleView(){ activeView = (activeView==='live'?'upcoming':'live'); document.getElementById('viewLabel').textContent = activeView==='live'?'(Live/Recent)':'(Upcoming)'; document.getElementById('toggleView').textContent = activeView==='live'?'Switch to Upcoming':'Switch to Live/Recent'; loadGames(); }
+document.querySelectorAll('[data-league]').forEach(b=> b.onclick = ()=> setLeague(b.getAttribute('data-league')) );
+document.getElementById('toggleView').onclick = toggleView;
+
+async function loadGames(){
+  const tbody=document.getElementById('scoresBody');
+  tbody.innerHTML = `<tr><td colspan="7" class="muted">Loading ${activeLeague} ${activeView} games…</td></tr>`;
+  try{
+    const url = `/.netlify/functions/liveGames?league=${encodeURIComponent(activeLeague)}&view=${encodeURIComponent(activeView)}`;
+    const r = await fetch(url); const j = await r.json();
+    const rows = (j.games||[]).slice(0,12).map(g=>{
+      const ai = (g.aiWinPct!=null) ? (Math.round(g.aiWinPct*100)+'%') : (isPremium() ? '—' : 'Premium');
+      return `<tr>
+        <td>${g.date||''}</td>
+        <td>${g.home||''} vs ${g.away||''}</td>
+        <td>${g.score||'-'}</td>
+        <td>${g.moneyline|| (isPremium()?'N/A':'Premium only')}</td>
+        <td>${g.spread|| (isPremium()?'N/A':'Premium only')}</td>
+        <td>${g.total|| (isPremium()?'N/A':'Premium only')}</td>
+        <td>${ai}</td>
+      </tr>`;
+    }).join('');
+    tbody.innerHTML = rows || `<tr><td colspan="7" class="muted">No games.</td></tr>`;
+    // Smart Picks
+    const sp = document.getElementById('smartPicks');
+    if(isPremium()){
+      const picks = (j.picks||[]).slice(0,5).map(p=>`<li>${p}</li>`).join('');
+      sp.innerHTML = picks || '<li class="muted">No edges right now.</li>';
+    }else{
+      sp.innerHTML = '<li class="muted">Upgrade to view Smart Picks.</li>';
+    }
+  }catch(e){
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">Error loading live data.</td></tr>`;
+  }
+}
+
+// ===== Chat (Phase 3: threads inside Analyst Hub only) =====
+const POST_URL='/.netlify/functions/chat-post', FEED_URL='/.netlify/functions/chat-feed';
+function escapeHTML(s){ return (s||'').replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+function renderMentions(s){ return escapeHTML(s).replace(/@([A-Za-z0-9_]{2,24})/g, '<span class="mention">@$1</span>'); }
+function rowHTML(m, room){
+  const t=new Date(m.ts||Date.now()).toLocaleTimeString();
+  const badge = m.tier==='Premium' ? '<span class="badge-prem">PREM</span>' : '';
+  const replies = (m.replies||[]).slice(0,8).map(r=>{
+    const rt=new Date(r.ts||Date.now()).toLocaleTimeString();
+    return '<div class="reply-box"><span class="chat-name">'+escapeHTML(r.user)+'</span><span class="chat-time">'+rt+'</span><div class="chat-text">'+renderMentions(r.text||'')+'</div></div>';
+  }).join('');
+  const replyBtn = (room==='analyst' && isPremium()) ? '<span class="reply-btn" data-reply="'+m.id+'">💬 Reply</span>' : '';
+  return `<div class="chat-row">
+    <span class="chat-name">${escapeHTML(m.user||'User')}</span>${badge}<span class="chat-time">${t}</span>${replyBtn}
+    <div class="chat-text">${renderMentions(m.text||'')}</div>${replies}
+  </div>`;
+}
+function renderFeed(id, arr, room){ const el=document.getElementById(id); el.innerHTML=(arr||[]).slice(-100).map(m=>rowHTML(m,room)).join(''); el.scrollTop=el.scrollHeight; }
+async function loadFeed(){ try{ const j=await (await fetch(FEED_URL)).json(); renderFeed('arenaFeed', j.arena||[], 'arena'); renderFeed('analystFeed', j.analyst||[], 'analyst'); }catch{} }
+document.getElementById('arenaSend').onclick=async ()=>{ const v=document.getElementById('arenaMsg').value.trim(); if(!v) return; await fetch(POST_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room:'arena',text:v,user:currentUser()||'Guest',tier:isPremium()?'Premium':'Free'})}); document.getElementById('arenaMsg').value=''; loadFeed(); };
+document.getElementById('analystSend').onclick=async ()=>{ if(!isPremium()) return alert('Premium only'); const v=document.getElementById('analystMsg').value.trim(); if(!v) return; await fetch(POST_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room:'analyst',text:v,user:currentUser()||'Guest',tier:'Premium'})}); document.getElementById('analystMsg').value=''; loadFeed(); };
+
+function openInlineReply(parentId){
+  if(!isPremium()) return alert('Premium only');
+  const feed = document.getElementById('analystFeed');
+  const target = feed.querySelector('[data-reply="'+parentId+'"]');
+  if(!target) return;
+  const old = document.getElementById('inlineReplyBox'); if(old) old.remove();
+  const box = document.createElement('div'); box.id='inlineReplyBox'; box.className='reply-box';
+  box.innerHTML = '<input id="replyInput" placeholder="Add a precise, helpful reply…"><button class="btn" id="replySend">Reply</button>';
+  target.parentElement.appendChild(box);
+  document.getElementById('replySend').onclick = async ()=>{ const v=document.getElementById('replyInput').value.trim(); if(!v) return; await fetch(POST_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room:'analyst',text:v,user:currentUser()||'Guest',tier:'Premium'})}); loadFeed(); };
+}
+document.addEventListener('click', e=>{ if(e.target && e.target.dataset && e.target.dataset.reply){ openInlineReply(e.target.dataset.reply); }});
+
+// ===== Init =====
+paintAuth(); updateMemberCounter(); paintPromo();
+const last = localStorage.getItem('ssp_last_league'); if(last) activeLeague=last;
+setLeague(activeLeague); // triggers loadGames
+setInterval(loadGames, 120000);
+setInterval(loadFeed, 2000);
+</script>
+</body>
+</html>
